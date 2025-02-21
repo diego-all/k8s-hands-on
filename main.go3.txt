@@ -1,0 +1,71 @@
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"log"
+	"net/http"
+	"os"
+	"regexp"
+	"time"
+)
+
+type HandsOn struct {
+	Time     time.Time `json:"time"`
+	Hostname string    `json:"hostname"`
+}
+
+func ServeHTTP(w http.ResponseWriter, r *http.Request) {
+
+	if r.URL.Path != "/" {
+		if !validatePath(r.URL.Path) {
+			// Aquí retornamos un error directamente sin llamar a WriteHeader nuevamente
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+		http.NotFound(w, r)
+		return
+	}
+
+	resp := HandsOn{
+		Time:     time.Now(),
+		Hostname: os.Getenv("HOSTNAME"),
+	}
+
+	jsonResp, err := json.Marshal(&resp)
+	if err != nil {
+		// Si ocurre un error al hacer Marshal, enviamos una respuesta de error
+		http.Error(w, "Error", http.StatusInternalServerError)
+		return
+	}
+
+	// Solo se llama a WriteHeader una vez y luego se escribe la respuesta
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonResp)
+}
+
+func validatePath(path string) bool {
+	// Validar Path Traversal
+	pathTraversalPattern := `(\.\./|\.\.\\)`
+	if matched, _ := regexp.MatchString(pathTraversalPattern, path); matched {
+		// Imprimir en consola cuando se detecta un Path Traversal
+		fmt.Println("Path traversal detected: ", path)
+		return false
+	}
+
+	// Validar SQL Injection (Patrones comunes de SQLi)
+	sqlInjectionPattern := `['";--]`
+	if matched, _ := regexp.MatchString(sqlInjectionPattern, path); matched {
+		// Imprimir en consola cuando se detecta un intento de SQL Injection
+		fmt.Println("SQL Injection detected: ", path)
+		return false
+	}
+
+	return true
+}
+
+func main() {
+	http.HandleFunc("/", ServeHTTP)
+	log.Fatal(http.ListenAndServe(":9001", nil))
+}

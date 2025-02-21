@@ -1,0 +1,72 @@
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"log"
+	"net/http"
+	"os"
+	"regexp"
+	"time"
+)
+
+type HandsOn struct {
+	Time     time.Time `json:"time"`
+	Hostname string    `json:"hostname"`
+}
+
+func ServeHTTP(w http.ResponseWriter, r *http.Request) {
+
+	// if r.URL.Path != "/" {
+	// 	if !validatePath(r.URL.Path) {
+	// 		http.Error(w, "Bad Request", http.StatusBadRequest)
+	// 		return
+	// 	}
+	// 	http.NotFound(w, r)
+	// 	return
+	// }
+
+	if !validatePath(r.URL.Path) {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+	http.NotFound(w, r)
+
+	resp := HandsOn{
+		Time:     time.Now(),
+		Hostname: os.Getenv("HOSTNAME"),
+	}
+
+	jsonResp, err := json.Marshal(&resp)
+	if err != nil {
+		w.Write([]byte("Error"))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(jsonResp))
+}
+
+func validatePath(path string) bool {
+	// Validar Path Traversal
+	pathTraversalPattern := `(\.\./|\.\.\\)`
+	if matched, _ := regexp.MatchString(pathTraversalPattern, path); matched {
+		fmt.Println("Path traversal detected: ", path)
+		return false
+	}
+
+	// Validar SQL Injection (Patrones comunes de SQLi)
+	sqlInjectionPattern := `['";--]`
+	if matched, _ := regexp.MatchString(sqlInjectionPattern, path); matched {
+		fmt.Println("SQL Injection detected: ", path)
+		return false
+	}
+
+	return true
+}
+
+func main() {
+	http.HandleFunc("/", ServeHTTP)
+	log.Fatal(http.ListenAndServe(":9001", nil))
+}
