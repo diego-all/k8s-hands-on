@@ -25,7 +25,7 @@ Editar el codigo desde visual estudio y tenerlo disponible desde docker (Es una 
 
 
 
-## 63. Crea un Dokcerfile para tu aplicacion en golang.
+## 63. Crea un Dockerfile para tu aplicacion en golang.
 
 https://dev.to/andrioid/slim-docker-images-for-your-go-application-11oo
 
@@ -47,15 +47,35 @@ root@pho3nix:/home/diegoall/MAESTRIA_ING/k8s-hands-on# ldd app
         docker rm -fv k8s-hands-on  (Buena practica recomendado)
         
 
-##
+## 64. Tip: ¿No puedes construir un Dockerfile por que no tienes Docker instalado?
+
+    ricardoandre97/backend-k8s-hands-on:v1
+
+## 65. Escribe manifiestos de Kubernetes para desplegar tu aplicación.
+
+    kubectl get deployments.apps backend-k8s-hands-on -o yaml | grep -i Pull
+
+    kubectl get deployments.apps backend-k8s-hands-on -o yaml | grep -i Pull -C 12
+
+**Recordar que si se usa minikube es necesario utilizar un comando:**
+
+    minikube image load k8s-hands-on (este no sirve o validar)
+    eval $(minikube -p minikube docker-env)
+
+    kubectl get pods -l app=backend
+
+        diegoall@pho3nix:~/MAESTRIA_ING/k8s-hands-on/backend$ kubectl get svc
+    NAME                              TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+    backend-k8s-hands-on              ClusterIP   10.111.106.142   <none>        80/TCP           22m
 
 
 
-##
+El servicio ClusterIP que has configurado solo es accesible dentro del clúster de Kubernetes, lo que significa que no puedes acceder a él directamente desde tu navegador. Para poder acceder a tu aplicación en Minikube desde el navegador, necesitas cambiar el tipo de servicio a NodePort o usar un inclusión de puerto con Minikube.
+
+
+## 66. Aprender a consumir el servicio que creaste.
 
 
 
-##
 
-
-## 
+## 67. Nota: ¿NO puedes ver el servicio Backend?
