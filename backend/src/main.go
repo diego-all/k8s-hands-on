@@ -22,7 +22,8 @@ func ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	resp := HandsOn{
 		Time:     time.Now(),
-		Hostname: os.Getenv("HOSTNAME"),
+		Hostname: os.Getenv("HOSTNAME"), // envvar
+		// Hostname: getHostname(),
 	}
 
 	jsonResp, err := json.Marshal(&resp)
@@ -43,5 +44,13 @@ func ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	http.HandleFunc("/", ServeHTTP)
-	log.Fatal(http.ListenAndServe(":9001", nil))
+	log.Fatal(http.ListenAndServe(":9090", nil))
+}
+
+func getHostname() string {
+	name, err := os.Hostname()
+	if err != nil {
+		return "unknown"
+	}
+	return name
 }

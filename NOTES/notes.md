@@ -14,7 +14,7 @@ https://dev.to/moficodes/build-your-first-rest-api-with-go-2gcj
 
 Editar el codigo desde visual estudio y tenerlo disponible desde docker (Es una ayuda pero es mala practica) Si el contenedor es malicioso podria afectar el host.
 
-    docker run --rm -dti -v $PWD/:/go --net host --name golang golang bash
+    docker run --rm -dti -v $PWD/:/go --net host --name golang golang bash  (Unido a la red de host para no exponer el puerto 9090)
 
     docker exec -it golang bash
 
